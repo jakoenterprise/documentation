@@ -6,8 +6,6 @@ var basicAuth = require('express-basic-auth');
 var port = process.env.PORT || 3000;
 var app = express();
 
-app.use(express.static('build'));
-
 app.use(basicAuth({
   challenge: true,
   realm: 'JAKO Documentation',
@@ -25,6 +23,8 @@ app.use(basicAuth({
     return true;
   }
 }));
+
+app.use(express.static('build'));
 
 app.get('/', function (req, res) {
   res.sendFile(resolve(__dirname + '/build/index.html'));
