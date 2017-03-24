@@ -192,6 +192,43 @@ sh bin/deploy.sh <span class="se">\</span>
   staging <span class="se">\</span>
   jakoenterprise/ubiq-magento <span class="se">\</span>
   7de0d6692209457c5e0fd8897add2f9266346c0a
+
+<span class="c"># deploy UBIQ to the production environment</span>
+ansible-playbook <span class="se">\</span>
+  -i manage/aws/hosts/production <span class="se">\</span>
+  --vault-password-file .vaultpass <span class="se">\</span>
+  manage/aws/provision.yml <span class="se">\</span>
+  -t ubiq
+
+<span class="c"># deploy UBIQ to the aptos environment</span>
+<span class="c"># YOU MUST BE IN THE ubiq-magento REPO TO MAKE THIS HAPPEN</span>
+git checkout aptos
+ansible-playbook <span class="se">\</span>
+  -i manage/hosts/aptos <span class="se">\</span>
+  --vault-password-file .vaultpass <span class="se">\</span>
+  manage/deploy.yml
+
+<span class="c"># deploy KicksUSA to the staging environment</span>
+sh bin/deploy.sh <span class="se">\</span>
+  kicksusa <span class="se">\</span>
+  staging <span class="se">\</span>
+  jakoenterprise/kicksusa-magento <span class="se">\</span>
+  COMMIT-ID
+
+<span class="c"># deploy KicksUSA to the production environment</span>
+ansible-playbook <span class="se">\</span>
+  -i manage/aws/hosts/production <span class="se">\</span>
+  --vault-password-file .vaultpass <span class="se">\</span>
+  manage/aws/provision.yml <span class="se">\</span>
+  -t kicksusa
+
+<span class="c"># deploy KicksUSA to the aptos environment</span>
+<span class="c"># YOU MUST BE IN THE kicksusa-magento REPO TO MAKE THIS HAPPEN</span>
+git checkout aptos
+ansible-playbook <span class="se">\</span>
+  -i manage/hosts/aptos <span class="se">\</span>
+  --vault-password-file .vaultpass <span class="se">\</span>
+  manage/deploy.yml
 </code></pre>
 <h3 id="check-deploy-status">Check Deploy Status</h3>
 
