@@ -143,6 +143,7 @@
 <li><p><a href="https://www.virtualbox.org/wiki/VirtualBox"><strong>Virtualbox</strong></a> (v5.1.14), the underlying VM management software</p></li>
 <li><p><a href="https://www.ansible.com/"><strong>Ansible</strong></a> (v2.2.0.0), for idempotent provisioning</p></li>
 <li><p><a href="https://www.packer.io/"><strong>Packer</strong></a> (v0.12.3), for build images for various destinations</p></li>
+<li><p><a href="https://aws.amazon.com/cli/"><strong>AWS CLI</strong></a> (v1.11.66), for many day-to-day commands, system management</p></li>
 </ol>
 
 <h3 id="credentials">Credentials</h3>
@@ -156,9 +157,12 @@
 <span class="nv">region</span><span class="o">=</span>us-east-1
 <span class="nv">output</span><span class="o">=</span>json
 </code></pre>
+<p><strong>Ask an administrator or lead engineer for credentials if you don&rsquo;t have them</strong>.</p>
+
 <ol>
-<li><p><a href="http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files"><strong>AWS Credentials</strong></a>, specifically a profile called &ldquo;jako&rdquo; in your AWS configuration files which should look like the example to the right. <strong>Ask an AWS administrator for credentials if you don&rsquo;t have them</strong>.</p></li>
+<li><p><a href="http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files"><strong>AWS Credentials</strong></a>, specifically a profile called &ldquo;jako&rdquo; in your AWS configuration files which should look like the example to the right.</p></li>
 <li><p><strong>An SSH keypair</strong>, which you can generate (if you don&rsquo;t already have one) by following <a href="https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/#generating-a-new-ssh-key">this tutorial</a>.</p></li>
+<li><p><strong>MySQL credentials</strong> if you need to run stored procedures or check records in the database.</p></li>
 </ol>
 
           <h1 id="process-reference">Process Reference</h1>
@@ -166,27 +170,118 @@
 <p>This is a list of frequently run processes.</p>
 
 <ol>
-<li><p><a href="#deploy"><strong>Deploy</strong></a> the UBIQ or KicksUSA Magento applications.</p></li>
-<li><p><a href="#check-deploy-status"><strong>Check Deploy Status</strong></a> check the status of a deployment.</p></li>
+<li><p><a href="#deploy-to-staging-or-production"><strong>Deploy</strong></a> the UBIQ or KicksUSA Magento applications to staging or production.</p></li>
+<li><p><a href="#ssh-into-an-environment"><strong>SSH</strong></a> into an environment.</p></li>
+<li><p><a href="#run-ad-hoc-commands"><strong>Run Ad-Hoc Commands</strong></a> like turning on maintenance mode, or restarting NGINX.</p></li>
+<li><p><a href="#image-importer-process"><strong>Image Importer Process</strong></a> for ensuring new images are associated in the database.</p></li>
+<li><p><a href="#deploy-aptos"><strong>Deploy Aptos</strong></a> check the status of a deployment.</p></li>
 </ol>
 
           <h1 id="infrastructure">Infrastructure</h1>
 
+<h2 id="getting-started">Getting Started</h2>
+
+<ol>
+<li><p>Install the necessary Python libraries by running <code class="prettyprint">pip install -r requirements.txt</code>.</p></li>
+<li><p>Download the vaultpass using <code class="prettyprint">aws s3 cp s3://jako-infrastructure/credentials/vaultpass .vaultpass --profile jako</code></p></li>
+</ol>
+
 <h2 id="how-to">How To</h2>
 
-<h3 id="deploy">Deploy</h3>
+<h3 id="deploy-to-staging-or-production">Deploy to Staging or Production</h3>
+<pre class="highlight shell"><code><span class="c"># deploy to the staging environment</span>
+bash bin/deploy.sh ubiq staging jakoenterprise/ubiq-magento 7de0d6692209457c5e0fd8897add2f9266346c0a
+<span class="c"># --&gt; staging d-96I9EBUEL</span>
 
-<h4 id="overview">Overview</h4>
-<pre class="highlight shell"><code>sh bin/deploy.sh &lt;app&gt; &lt;env&gt; &lt;repo&gt; &lt;commit&gt;
+<span class="c"># deploy to the KicksUSA production and admin environments at the same time</span>
+bash bin/deploy.sh kicksusa production jakoenterprise/kicksusa-magento 7de0d6692209457c5e0fd8897add2f9266346c0a
+<span class="c"># --&gt; production d-96I9EBUEL</span>
+<span class="c"># --&gt; admin d-96I9EBUEL</span>
+
+<span class="c"># check the deploy status</span>
+bash bin/status.sh d-96I9EBUEL d-96I9EBUEW <span class="c"># and so on</span>
 </code></pre>
 <p>The output (if there&rsquo;s no error) will be a deployment ID, such as <code class="prettyprint">d-96I9EBUEL</code>. You can use this identifier to check the status of the deployment.</p>
 
-<p>Note that this is just a wrapper for the <code class="prettyprint">awscli</code> package, which provides much more control over the system.</p>
+<p><strong>NOTE: there is no &ldquo;rollback&rdquo; mechanism right now. If a deployment is bad, re-deploy the last known working commit.</strong></p>
 
-<div></div>
+<h3 id="ssh-into-an-environment">SSH Into An Environment</h3>
+<pre class="highlight shell"><code>bash bin/ssh.sh ubiq staging
+bash bin/ssh.sh ubiq production
+bash bin/ssh.sh kicksusa staging
+bash bin/ssh.sh kicksusa production
+</code></pre>
+<p>We should avoid this if possible (and a) use ad-hoc commands instead, or b) build the process as a Magento feature), but sometimes you just <em>need</em> to SSH into an environment. We use what&rsquo;s called a <a href="https://en.wikipedia.org/wiki/Bastion_host">bastion host</a> as a doorway to each private network. To simplify accessing an environment, just use the provided shell script.</p>
 
-<h4 id="examples">Examples</h4>
-<pre class="highlight shell"><code><span class="c"># deploy UBIQ to the staging environment</span>
+<p><strong>NOTE: you&rsquo;re SSH key needs to be whitelisted and built into the AWS AMI for this to work, otherwise someone with a whitelisted IP will need to add your public key to the <code class="prettyprint">www-data</code> user&rsquo;s <code class="prettyprint">~/.ssh/authorized_keys</code> file.</strong></p>
+
+<h3 id="run-ad-hoc-commands">Run Ad-Hoc Commands</h3>
+<pre class="highlight shell"><code><span class="c"># restart the nginx service in ubiq production</span>
+ansible -i manage/packer/hosts/ec2.py <span class="se">\</span>
+  --vault-password-file .vaultpass <span class="se">\</span>
+  -m service -a <span class="s2">"name=nginx state=restarted"</span> <span class="se">\</span>
+  <span class="s2">"tag_environment_production:&amp;tag_application_ubiq"</span>
+
+<span class="c"># list a directory on kicksusa staging</span>
+ansible -i manage/packer/hosts/ec2.py <span class="se">\</span>
+  --vault-password-file .vaultpass <span class="se">\</span>
+  -m shell -a <span class="s2">"ls /srv/www/magento"</span> <span class="se">\</span>
+  <span class="s2">"tag_environment_staging:&amp;tag_application_kicksusa"</span>
+
+<span class="c"># enable maintenance mode on ubiq staging</span>
+ansible -i manage/packer/hosts/ec2.py <span class="se">\</span>
+  --vault-password-file .vaultpass <span class="se">\</span>
+  -m shell -a <span class="s2">"touch /srv/www/magento/maintenance.flag"</span> <span class="se">\</span>
+  <span class="s2">"tag_environment_staging:&amp;tag_application_ubiq"</span>
+
+<span class="c"># disable maintenance mode on ubiq staging</span>
+ansible -i manage/packer/hosts/ec2.py <span class="se">\</span>
+  --vault-password-file .vaultpass <span class="se">\</span>
+  -m shell -a <span class="s2">"rm /srv/www/magento/maintenance.flag"</span> <span class="se">\</span>
+  <span class="s2">"tag_environment_staging:&amp;tag_application_ubiq"</span>
+</code></pre>
+<p>We continue to use Ansible for managing our infrastructure. If you need to run an ad-hoc (one-off) command you can use Ansible to do this. We use a dynamic inventory, so it&rsquo;ll adapt to whatever hosts are available at the time (they can change due to autoscaling). You can reference the <a href="http://docs.ansible.com/ansible/modules_by_category.html">Ansible docs</a> for more modules.</p>
+
+<h3 id="image-importer-process">Image Importer Process</h3>
+<pre class="highlight shell"><code><span class="c"># 1. SSH into a node (obviously switch this up for UBIQ)</span>
+bash bin/ssh.sh kicksusa production
+
+<span class="c"># 2. switch to the app directory</span>
+<span class="nb">cd</span> /srv/www/magento
+
+<span class="c"># 3. run the CLI image importer to insert records to the DB</span>
+php shell/local/jako.php rms:imageImporter --skip-sync
+
+<span class="c"># 4. connect to MySQL (the host for UBIQ is db.ubiqlife.com)</span>
+mysql -h db.kicksusa.com -u your.user -p
+
+<span class="c"># 5. run the image import stored procedures to associate records in Magento</span>
+
+<span class="c"># kicksusa</span>
+CALL kicks_rms_import.sp_image_name_load<span class="o">()</span>;
+CALL kicks_rms_import.sp_image_refresh<span class="o">()</span>;
+
+<span class="c"># ubiq</span>
+CALL ubiq_rms_import.sp_ee_image_name_load<span class="o">()</span>;
+CALL ubiq_rms_import.sp_ee_image_refresh<span class="o">()</span>;
+</code></pre>
+<p>This is a multi-stage process that ensures the latest images are associated to their products in the Magento database. You&rsquo;ll need SSH access and MySQL access to make this happen.</p>
+
+          <h1 id="aptos">Aptos</h1>
+
+<h3 id="aptos-deploy">Aptos Deploy</h3>
+<pre class="highlight shell"><code></code></pre>
+<p>This process is a legacy deployment process, it&rsquo;s sticking around until we&rsquo;re able</p>
+
+<h3 id="aptos-ip-whitelist">Aptos IP Whitelist</h3>
+<pre class="highlight shell"><code><span class="c"># deploy UBIQ to the production environment</span>
+sh bin/deploy.sh <span class="se">\</span>
+  ubiq <span class="se">\</span>
+  production <span class="se">\</span>
+  jakoenterprise/ubiq-magento <span class="se">\</span>
+  7de0d6692209457c5e0fd8897add2f9266346c0a
+
+<span class="c"># deploy UBIQ to the staging environment</span>
 sh bin/deploy.sh <span class="se">\</span>
   ubiq <span class="se">\</span>
   staging <span class="se">\</span>
@@ -194,11 +289,11 @@ sh bin/deploy.sh <span class="se">\</span>
   7de0d6692209457c5e0fd8897add2f9266346c0a
 
 <span class="c"># deploy UBIQ to the production environment</span>
-ansible-playbook <span class="se">\</span>
-  -i manage/aws/hosts/production <span class="se">\</span>
-  --vault-password-file .vaultpass <span class="se">\</span>
-  manage/aws/provision.yml <span class="se">\</span>
-  -t ubiq
+sh bin/deploy.sh <span class="se">\</span>
+  ubiq <span class="se">\</span>
+  production <span class="se">\</span>
+  jakoenterprise/ubiq-magento <span class="se">\</span>
+  7de0d6692209457c5e0fd8897add2f9266346c0a
 
 <span class="c"># deploy UBIQ to the aptos environment</span>
 <span class="c"># YOU MUST BE IN THE ubiq-magento REPO TO MAKE THIS HAPPEN</span>
@@ -230,20 +325,10 @@ ansible-playbook <span class="se">\</span>
   --vault-password-file .vaultpass <span class="se">\</span>
   manage/deploy.yml
 </code></pre>
-<h3 id="check-deploy-status">Check Deploy Status</h3>
+          <h1 id="kicksusa">KicksUSA</h1>
 
-<h4 id="overview">Overview</h4>
-<pre class="highlight shell"><code>sh bin/status.sh &lt;deploy-id&gt;
-</code></pre>
-<p>The output will be some info about the deployment.</p>
+          <h1 id="ubiq">UBIQ</h1>
 
-<p>Note that this is just a wrapper for the <code class="prettyprint">awscli</code> package, which provides much more control over the system.</p>
-
-<div></div>
-
-<h4 id="examples">Examples</h4>
-<pre class="highlight shell"><code>sh bin/status.sh d-96I9EBUEL
-</code></pre>
       </div>
       <div class="dark-box">
           <div class="lang-selector">
