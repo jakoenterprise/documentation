@@ -11,6 +11,9 @@ includes:
   - development-requirements
   - process-reference
   - infrastructure
+  - aptos
+  - kicksusa
+  - ubiq
 
 search: true
 ---

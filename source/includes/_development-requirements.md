@@ -26,6 +26,8 @@ Each of the items listed below are required for some aspect of development, mana
 
 4. [**Packer**](https://www.packer.io/) (v0.12.3), for build images for various destinations
 
+5. [**AWS CLI**](https://aws.amazon.com/cli/) (v1.11.66), for many day-to-day commands, system management
+
 ### Credentials
 
 ```sh
@@ -40,6 +42,10 @@ region=us-east-1
 output=json
 ```
 
-1. [**AWS Credentials**](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files), specifically a profile called "jako" in your AWS configuration files which should look like the example to the right. **Ask an AWS administrator for credentials if you don't have them**.
+**Ask an administrator or lead engineer for credentials if you don't have them**.
+
+1. [**AWS Credentials**](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files), specifically a profile called "jako" in your AWS configuration files which should look like the example to the right.
 
 2. **An SSH keypair**, which you can generate (if you don't already have one) by following [this tutorial](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/#generating-a-new-ssh-key).
+
+3. **MySQL credentials** if you need to run stored procedures or check records in the database.
