@@ -47,25 +47,25 @@ We should avoid this if possible (and a) use ad-hoc commands instead, or b) buil
 
 ```sh
 # restart the nginx service in ubiq production
-ansible -i manage/packer/hosts/ec2.py \
+ansible -b -i manage/packer/hosts/ec2.py \
   --vault-password-file .vaultpass \
   -m service -a "name=nginx state=restarted" \
   "tag_environment_production:&tag_application_ubiq"
 
 # list a directory on kicksusa staging
-ansible -i manage/packer/hosts/ec2.py \
+ansible -b -i manage/packer/hosts/ec2.py \
   --vault-password-file .vaultpass \
   -m shell -a "ls /srv/www/magento" \
   "tag_environment_staging:&tag_application_kicksusa"
 
 # enable maintenance mode on ubiq staging
-ansible -i manage/packer/hosts/ec2.py \
+ansible -b -i manage/packer/hosts/ec2.py \
   --vault-password-file .vaultpass \
   -m shell -a "touch /srv/www/magento/maintenance.flag" \
   "tag_environment_staging:&tag_application_ubiq"
 
 # disable maintenance mode on ubiq staging
-ansible -i manage/packer/hosts/ec2.py \
+ansible -b -i manage/packer/hosts/ec2.py \
   --vault-password-file .vaultpass \
   -m shell -a "rm /srv/www/magento/maintenance.flag" \
   "tag_environment_staging:&tag_application_ubiq"
@@ -82,7 +82,7 @@ bash bin/ssh.sh kicksusa production
 # 2. switch to the app directory
 cd /srv/www/magento
 
-# 3. run the CLI image importer to insert records to the DB
+# 3. run the CLI image importer to insert records to the DB (skip the S3 sync)
 php shell/local/jako.php rms:imageImporter --skip-sync
 
 # 4. connect to MySQL (the host for UBIQ is db.ubiqlife.com)
