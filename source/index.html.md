@@ -1,8 +1,8 @@
 ---
-title: API Reference
+title: JAKO Enterprises Documentation
 
 language_tabs:
-  - code
+  - Code
 
 toc_footers: []
 
