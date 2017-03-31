@@ -71,7 +71,26 @@ ansible -b -i manage/packer/hosts/ec2.py \
   "tag_environment_staging:&tag_application_ubiq"
 ```
 
-We continue to use Ansible for managing our infrastructure. If you need to run an ad-hoc (one-off) command you can use Ansible to do this. We use a dynamic inventory, so it'll adapt to whatever hosts are available at the time (they can change due to autoscaling). You can reference the [Ansible docs](http://docs.ansible.com/ansible/modules_by_category.html) for more modules.
+We continue to use Ansible for managing our infrastructure. If you need to run an ad-hoc (one-off) command you can use Ansible to do this. We use a dynamic inventory (`ec2.py`), so Ansible will download the latest list of servers before executing the command (the number of servers can change due to autoscaling).
+
+The tags available to you are:
+
+- `tag_application_kicksusa`
+- `tag_application_ubiq`
+- `tag_environment_production`
+- `tag_environment_staging`
+- `tag_role_kicksusa_admin`
+- `tag_role_kicksusa_web`
+- `tag_role_ubiq_admin`
+- `tag_role_ubiq_web`
+
+The syntax `tag:&tag` is an _intersection_ between two tags. It means "find all the servers that have both tags". Here are some examples of how to target specific sets of servers -- image **three UBIQ nodes** in **production**, **two web** and **one admin**:
+
+- `tag_environment_production:&tag_role_ubiq_web` targets the two web nodes
+- `tag_environment_production:&tag_role_ubiq_admin` targets the one admin node
+- `tag_environment_production:&tag_application_ubiq` targets all three
+
+With that info you should be able to target the servers you need to perform a given task. You can reference the [Ansible docs](http://docs.ansible.com/ansible/modules_by_category.html) for all of the available modules.
 
 ### Image Importer Process
 
