@@ -217,25 +217,25 @@ bash bin/ssh.sh kicksusa production
 
 <h3 id="run-ad-hoc-commands">Run Ad-Hoc Commands</h3>
 <pre class="highlight shell"><code><span class="c"># restart the nginx service in ubiq production</span>
-ansible -i manage/packer/hosts/ec2.py <span class="se">\</span>
+ansible -b -i manage/packer/hosts/ec2.py <span class="se">\</span>
   --vault-password-file .vaultpass <span class="se">\</span>
   -m service -a <span class="s2">"name=nginx state=restarted"</span> <span class="se">\</span>
   <span class="s2">"tag_environment_production:&amp;tag_application_ubiq"</span>
 
 <span class="c"># list a directory on kicksusa staging</span>
-ansible -i manage/packer/hosts/ec2.py <span class="se">\</span>
+ansible -b -i manage/packer/hosts/ec2.py <span class="se">\</span>
   --vault-password-file .vaultpass <span class="se">\</span>
   -m shell -a <span class="s2">"ls /srv/www/magento"</span> <span class="se">\</span>
   <span class="s2">"tag_environment_staging:&amp;tag_application_kicksusa"</span>
 
 <span class="c"># enable maintenance mode on ubiq staging</span>
-ansible -i manage/packer/hosts/ec2.py <span class="se">\</span>
+ansible -b -i manage/packer/hosts/ec2.py <span class="se">\</span>
   --vault-password-file .vaultpass <span class="se">\</span>
   -m shell -a <span class="s2">"touch /srv/www/magento/maintenance.flag"</span> <span class="se">\</span>
   <span class="s2">"tag_environment_staging:&amp;tag_application_ubiq"</span>
 
 <span class="c"># disable maintenance mode on ubiq staging</span>
-ansible -i manage/packer/hosts/ec2.py <span class="se">\</span>
+ansible -b -i manage/packer/hosts/ec2.py <span class="se">\</span>
   --vault-password-file .vaultpass <span class="se">\</span>
   -m shell -a <span class="s2">"rm /srv/www/magento/maintenance.flag"</span> <span class="se">\</span>
   <span class="s2">"tag_environment_staging:&amp;tag_application_ubiq"</span>
@@ -249,7 +249,7 @@ bash bin/ssh.sh kicksusa production
 <span class="c"># 2. switch to the app directory</span>
 <span class="nb">cd</span> /srv/www/magento
 
-<span class="c"># 3. run the CLI image importer to insert records to the DB</span>
+<span class="c"># 3. run the CLI image importer to insert records to the DB (skip the S3 sync)</span>
 php shell/local/jako.php rms:imageImporter --skip-sync
 
 <span class="c"># 4. connect to MySQL (the host for UBIQ is db.ubiqlife.com)</span>
