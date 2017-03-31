@@ -176,7 +176,13 @@
 <li><p><a href="#ssh-into-an-environment"><strong>SSH</strong></a> into an environment.</p></li>
 <li><p><a href="#run-ad-hoc-commands"><strong>Run Ad-Hoc Commands</strong></a> like turning on maintenance mode, or restarting NGINX.</p></li>
 <li><p><a href="#image-importer-process"><strong>Image Importer Process</strong></a> for ensuring new images are associated in the database.</p></li>
-<li><p><a href="#deploy-aptos"><strong>Deploy Aptos</strong></a> check the status of a deployment.</p></li>
+<li><p><a href="#inventory-load"><strong>Inventory Load</strong></a> for importing new products and stock into Magento.</p></li>
+</ol>
+
+<p>There&rsquo;s <a href="https://gist.github.com/rpnzl/403a88cbe41c32a7dd08ccab7ad958e9">a gist with a bunch of useful scripts</a> that we&rsquo;ve compiled over time, too.</p>
+
+<ol>
+<li><a href="#deploy-aptos"><strong>Deploy Aptos</strong></a> check the status of a deployment.</li>
 </ol>
 
           <h1 id="infrastructure">Infrastructure</h1>
@@ -247,22 +253,22 @@ ansible -b -i manage/packer/hosts/ec2.py <span class="se">\</span>
 <p>The tags available to you are:</p>
 
 <ul>
-<li><code class="prettyprint">tag_application_kicksusa</code></li>
-<li><code class="prettyprint">tag_application_ubiq</code></li>
-<li><code class="prettyprint">tag_environment_production</code></li>
-<li><code class="prettyprint">tag_environment_staging</code></li>
-<li><code class="prettyprint">tag_role_kicksusa_admin</code></li>
-<li><code class="prettyprint">tag_role_kicksusa_web</code></li>
-<li><code class="prettyprint">tag_role_ubiq_admin</code></li>
-<li><code class="prettyprint">tag_role_ubiq_web</code></li>
+<li><p><code class="prettyprint">tag_application_kicksusa</code></p></li>
+<li><p><code class="prettyprint">tag_application_ubiq</code></p></li>
+<li><p><code class="prettyprint">tag_environment_production</code></p></li>
+<li><p><code class="prettyprint">tag_environment_staging</code></p></li>
+<li><p><code class="prettyprint">tag_role_kicksusa_admin</code></p></li>
+<li><p><code class="prettyprint">tag_role_kicksusa_web</code></p></li>
+<li><p><code class="prettyprint">tag_role_ubiq_admin</code></p></li>
+<li><p><code class="prettyprint">tag_role_ubiq_web</code></p></li>
 </ul>
 
-<p>The syntax <code class="prettyprint">tag:&amp;tag</code> is an <em>intersection</em> between two tags. It means &ldquo;find all the servers that have both tags&rdquo;. Here are some examples of how to target specific sets of servers &ndash; image <strong>three UBIQ nodes</strong> in <strong>production</strong>, <strong>two web</strong> and <strong>one admin</strong>:</p>
+<p>The syntax <code class="prettyprint">tag:&amp;tag</code> is an <em>intersection</em> of two tags. It means &ldquo;find all the servers that have both tags&rdquo;. Here are some examples of how to target specific sets of servers &ndash; imagine <strong>three UBIQ nodes</strong> in <strong>production</strong>, <strong>two web</strong> and <strong>one admin</strong>:</p>
 
 <ul>
-<li><code class="prettyprint">tag_environment_production:&amp;tag_role_ubiq_web</code> targets the two web nodes</li>
-<li><code class="prettyprint">tag_environment_production:&amp;tag_role_ubiq_admin</code> targets the one admin node</li>
-<li><code class="prettyprint">tag_environment_production:&amp;tag_application_ubiq</code> targets all three</li>
+<li><p><code class="prettyprint">tag_environment_production:&amp;tag_role_ubiq_web</code> targets the two web nodes</p></li>
+<li><p><code class="prettyprint">tag_environment_production:&amp;tag_role_ubiq_admin</code> targets the one admin node</p></li>
+<li><p><code class="prettyprint">tag_environment_production:&amp;tag_application_ubiq</code> targets all three</p></li>
 </ul>
 
 <p>With that info you should be able to target the servers you need to perform a given task. You can reference the <a href="http://docs.ansible.com/ansible/modules_by_category.html">Ansible docs</a> for all of the available modules.</p>
@@ -290,7 +296,40 @@ CALL kicks_rms_import.sp_image_refresh<span class="o">()</span>;
 CALL ubiq_rms_import.sp_ee_image_name_load<span class="o">()</span>;
 CALL ubiq_rms_import.sp_ee_image_refresh<span class="o">()</span>;
 </code></pre>
-<p>This is a multi-stage process that ensures the latest images are associated to their products in the Magento database. You&rsquo;ll need SSH access and MySQL access to make this happen.</p>
+<p>This is a multi-stage process that ensures the latest images are associated to their products in the Magento database. <strong>You&rsquo;ll need SSH access and MySQL access to make this happen.</strong></p>
+
+<h3 id="inventory-load">Inventory Load</h3>
+<pre class="highlight shell"><code><span class="c"># 1. SSH into a node (obviously switch this up for UBIQ)</span>
+bash bin/ssh.sh kicksusa production
+
+<span class="c"># 2. connect to MySQL (the host for UBIQ is db.ubiqlife.com)</span>
+mysql -h db.kicksusa.com -u your.user -p
+
+<span class="c"># 3. run the inventory import stored procedures</span>
+
+<span class="c"># kicksusa</span>
+CALL kicks_rms_import.sp_image_name_load<span class="o">()</span>;
+CALL kicks_rms_import.sp_rmsinventory_raw_load<span class="o">()</span>;
+CALL kicks_rms_import.sp_inventory_load<span class="o">()</span>;
+CALL kicks_rms_import.sp_url_key_load<span class="o">()</span>;
+CALL kicks_rms_import.sp_inventory_load_cleanup<span class="o">()</span>;
+
+<span class="c"># ubiq</span>
+CALL ubiq_rms_import.sp_ee_image_name_load<span class="o">()</span>;
+CALL ubiq_rms_import.sp_ee_inventory_load<span class="o">()</span>;
+CALL ubiq_rms_import.sp_ee_map_load<span class="o">()</span>;
+CALL ubiq_rms_import.sp_ee_url_key_load<span class="o">()</span>;
+
+<span class="c"># 4. verify inventory import status by viewing the logs, looking</span>
+<span class="c"># for "log_short_description"s like "INVENTORY LOAD ENDED"</span>
+
+<span class="c"># kicksusa</span>
+SELECT <span class="k">*</span> FROM kicks_globals.TBL_LOG ORDER BY log_id DESC LIMIT 100;
+
+<span class="c"># ubiq</span>
+SELECT <span class="k">*</span> FROM ubiq_globals.TBL_LOG ORDER BY log_id DESC LIMIT 100;
+</code></pre>
+<p>This is the process that ensures inventory updates and new products are moved into the Magento DB from the warehouse management system (RMS) (see <a href="https://docs.google.com/drawings/d/1RATPCf7aXYLFEkBYrMuZVwgQXGSmOsSlFLZNL4JplqA/edit">diagram</a>). <strong>You&rsquo;ll need SSH access and MySQL access to make this happen.</strong></p>
 
           <h1 id="aptos">Aptos</h1>
 
