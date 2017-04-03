@@ -216,7 +216,7 @@ bash bin/ssh.sh ubiq production
 bash bin/ssh.sh kicksusa staging
 bash bin/ssh.sh kicksusa production
 </code></pre>
-<p>We should avoid this if possible and a) use ad-hoc commands instead, or b) build the process as a Magento feature), but sometimes you just <em>need</em> to SSH into an environment. We use what&rsquo;s called a <a href="https://en.wikipedia.org/wiki/Bastion_host">bastion host</a> as a doorway to each private network. To simplify accessing an environment, just use the provided shell script.</p>
+<p>We should avoid this if possible and a) use ad-hoc commands instead, or b) build the process as a Magento feature, but sometimes you just <em>need</em> to SSH into an environment. We use what&rsquo;s called a <a href="https://en.wikipedia.org/wiki/Bastion_host">bastion host</a> as a doorway to each private network. To simplify accessing an environment, just use the provided shell script.</p>
 
 <p><strong>NOTE: you&rsquo;re SSH key needs to be whitelisted and built into the AWS AMI for this to work, otherwise someone with a whitelisted IP will need to add your public key to the <code class="prettyprint">www-data</code> user&rsquo;s <code class="prettyprint">~/.ssh/authorized_keys</code> file.</strong></p>
 
