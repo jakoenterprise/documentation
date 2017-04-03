@@ -169,7 +169,7 @@
 
           <h1 id="process-reference">Process Reference</h1>
 
-<p>This is a list of frequently run processes.</p>
+<p>This is a list of frequently run processes. There&rsquo;s <a href="https://gist.github.com/rpnzl/403a88cbe41c32a7dd08ccab7ad958e9">a gist with a bunch of useful scripts</a> that we&rsquo;ve compiled over time, too.</p>
 
 <ol>
 <li><p><a href="#deploy-to-staging-or-production"><strong>Deploy</strong></a> the UBIQ or KicksUSA Magento applications to staging or production.</p></li>
@@ -177,12 +177,9 @@
 <li><p><a href="#run-ad-hoc-commands"><strong>Run Ad-Hoc Commands</strong></a> like turning on maintenance mode, or restarting NGINX.</p></li>
 <li><p><a href="#image-importer-process"><strong>Image Importer Process</strong></a> for ensuring new images are associated in the database.</p></li>
 <li><p><a href="#inventory-load"><strong>Inventory Load</strong></a> for importing new products and stock into Magento.</p></li>
-</ol>
-
-<p>There&rsquo;s <a href="https://gist.github.com/rpnzl/403a88cbe41c32a7dd08ccab7ad958e9">a gist with a bunch of useful scripts</a> that we&rsquo;ve compiled over time, too.</p>
-
-<ol>
-<li><a href="#deploy-aptos"><strong>Deploy Aptos</strong></a> check the status of a deployment.</li>
+<li><p><a href="#update-environment-variables"><strong>Edit Environment Variables</strong></a> to change runtime configuration.</p></li>
+<li><p><a href="#deploy-aptos-staging"><strong>Aptos: Deploy</strong></a> deploy to the Aptos staging server.</p></li>
+<li><p><a href="#whitelist-ips-for-aptos-staging"><strong>Aptos: Whitelist IPs</strong></a> to grant access.</p></li>
 </ol>
 
           <h1 id="infrastructure">Infrastructure</h1>
@@ -333,65 +330,110 @@ SELECT <span class="k">*</span> FROM ubiq_globals.TBL_LOG ORDER BY log_id DESC L
 
           <h1 id="aptos">Aptos</h1>
 
-<h3 id="aptos-deploy">Aptos Deploy</h3>
-<pre class="highlight shell"><code></code></pre>
-<p>This process is a legacy deployment process, it&rsquo;s sticking around until we&rsquo;re able</p>
+<h2 id="getting-started">Getting Started</h2>
 
-<h3 id="aptos-ip-whitelist">Aptos IP Whitelist</h3>
-<pre class="highlight shell"><code><span class="c"># deploy UBIQ to the production environment</span>
-sh bin/deploy.sh <span class="se">\</span>
-  ubiq <span class="se">\</span>
-  production <span class="se">\</span>
-  jakoenterprise/ubiq-magento <span class="se">\</span>
-  7de0d6692209457c5e0fd8897add2f9266346c0a
+<p>The Aptos staging setup uses an older provisioning and deployment setup. This will move eventually, but for now we&rsquo;re running it in parallel.</p>
 
-<span class="c"># deploy UBIQ to the staging environment</span>
-sh bin/deploy.sh <span class="se">\</span>
-  ubiq <span class="se">\</span>
-  staging <span class="se">\</span>
-  jakoenterprise/ubiq-magento <span class="se">\</span>
-  7de0d6692209457c5e0fd8897add2f9266346c0a
+<ol>
+<li>Clone both the KicksUSA and UBIQ Magento repositories</li>
+</ol>
 
-<span class="c"># deploy UBIQ to the production environment</span>
-sh bin/deploy.sh <span class="se">\</span>
-  ubiq <span class="se">\</span>
-  production <span class="se">\</span>
-  jakoenterprise/ubiq-magento <span class="se">\</span>
-  7de0d6692209457c5e0fd8897add2f9266346c0a
+<p>And then for both of the repos you just cloned:</p>
 
-<span class="c"># deploy UBIQ to the aptos environment</span>
-<span class="c"># YOU MUST BE IN THE ubiq-magento REPO TO MAKE THIS HAPPEN</span>
-git checkout aptos
-ansible-playbook <span class="se">\</span>
-  -i manage/hosts/aptos <span class="se">\</span>
-  --vault-password-file .vaultpass <span class="se">\</span>
-  manage/deploy.yml
+<ol>
+<li><p>Install the required Ansible roles (in each repository) with <code class="prettyprint">ansible-galaxy install -r requirements.yml</code></p></li>
+<li><p>Download the relevant vaultpass using <code class="prettyprint">aws s3 cp s3://$BUCKET/credentials/vaultpass .vaultpass --profile jako</code> where <code class="prettyprint">$BUCKET</code> is either <code class="prettyprint">jako-kicksusa</code> or <code class="prettyprint">jako-ubiq</code></p></li>
+</ol>
 
-<span class="c"># deploy KicksUSA to the staging environment</span>
-sh bin/deploy.sh <span class="se">\</span>
-  kicksusa <span class="se">\</span>
-  staging <span class="se">\</span>
-  jakoenterprise/kicksusa-magento <span class="se">\</span>
-  COMMIT-ID
+<p><strong>Quick note a manual Aptos staging tweaks, we&rsquo;ve added <code class="prettyprint">127.0.0.1 aptos.kicksusa.com aptos.ubiqlife.com</code> the <code class="prettyprint">/etc/hosts</code> file to fix an API issue where Magento cannot access its own WSDL file.</strong></p>
 
-<span class="c"># deploy KicksUSA to the production environment</span>
-ansible-playbook <span class="se">\</span>
-  -i manage/aws/hosts/production <span class="se">\</span>
-  --vault-password-file .vaultpass <span class="se">\</span>
-  manage/aws/provision.yml <span class="se">\</span>
-  -t kicksusa
+<h2 id="how-to">How To</h2>
 
-<span class="c"># deploy KicksUSA to the aptos environment</span>
-<span class="c"># YOU MUST BE IN THE kicksusa-magento REPO TO MAKE THIS HAPPEN</span>
-git checkout aptos
-ansible-playbook <span class="se">\</span>
-  -i manage/hosts/aptos <span class="se">\</span>
-  --vault-password-file .vaultpass <span class="se">\</span>
-  manage/deploy.yml
+<h3 id="deploy-aptos-staging">Deploy Aptos Staging</h3>
+<pre class="highlight shell"><code><span class="c"># from within the kicksusa or ubiq magento repositories</span>
+ansible-playbook -i manage/hosts/aptos <span class="se">\</span>
+  --vault-password-file .vaultpass manage/deploy.yml
 </code></pre>
+<p>This is a legacy process, it&rsquo;s sticking around until we&rsquo;re able to switch over the Aptos staging environment. Ansible will deploy the <code class="prettyprint">aptos</code> branch by default for the <code class="prettyprint">aptos</code> host file.</p>
+
+<p><strong>Both KicksUSA and UBIQ Aptos environments exist on the same staging server.</strong></p>
+
+<h3 id="provision-aptos-staging">Provision Aptos Staging</h3>
+<pre class="highlight shell"><code><span class="c"># from within the infrastructure repo</span>
+ansible-playbook -i manage/hosts/aptos <span class="se">\</span>
+  --vault-password-file .vaultpass manage/provision.yml
+</code></pre>
+<p>This is a legacy process, it&rsquo;s sticking around until we&rsquo;re able to switch over the Aptos staging environment. It&rsquo;s unlikely this command will need to be run.</p>
+
+<h3 id="whitelist-ips-for-aptos-staging">Whitelist IPs for Aptos Staging</h3>
+
+<p>Rather than do this using NGINX on the staging server itself, we&rsquo;ve moved whitelisting to AWS security groups to make it a less technical task. Anyone with the correct permissions can whitelist a new IP by taking the following steps.</p>
+
+<p>First, navigate to the EC2 dashboard.</p>
+
+<p><img src="https://cl.ly/2f1q392d072u/[070b4088b65deff8a304909f6771ef42]_Image%202017-04-03%20at%202.02.56%20PM.public.png" alt="Navigate to the EC2 dashboard" /></p>
+
+<p>Then find the newest Aptos security group. <strong>Note that security groups can have a maximum of 25 rules each, so if &ldquo;Aptos 2&rdquo; fills up, start using &ldquo;Aptos 3&rdquo; instead.</strong></p>
+
+<p><img src="https://cl.ly/2w0X0M161L14/[c5206d05a119b8af3b85cd221b892ba2]_Image%202017-04-03%20at%202.08.37%20PM.public.png" alt="Edit the newest Aptos Security Group" /></p>
+
+<p>Add a new record, ensure it allows &ldquo;All TCP&rdquo; traffic, and add the IP CIDR. <strong>The &ldquo;/32&rdquo; is important, remember to add that to the end of the IP you&rsquo;re whitelisting.</strong> Once added the IP will be immediately able to access the Aptos server.</p>
+
+<p><img src="https://cl.ly/06150p0n2O1b/Image%202017-04-03%20at%202.13.15%20PM.public.png" alt="Add a new record" /></p>
+
           <h1 id="kicksusa">KicksUSA</h1>
 
+<h2 id="getting-started">Getting Started</h2>
+
+<ol>
+<li>Download the vaultpass by running <code class="prettyprint">aws s3 cp s3://jako-kicksusa/credentials/vaultpass .vaultpass --profile jako</code></li>
+</ol>
+
+<h2 id="how-to">How To</h2>
+
+<h3 id="update-environment-variables">Update Environment Variables</h3>
+
+<pre class="highlight shell"><code><span class="c"># staging</span>
+ansible-vault --vault-password-file .vaultpass <span class="se">\</span>
+  ansible/group_vars/staging.yml edit
+
+<span class="c"># production</span>
+ansible-vault --vault-password-file .vaultpass <span class="se">\</span>
+  ansible/group_vars/production.yml edit
+
+<span class="c"># aptos</span>
+ansible-vault --vault-password-file .vaultpass <span class="se">\</span>
+  manage/group_vars/aptos.yml edit
+</code></pre>
+
+<p>Environment variables require a deploy. They&rsquo;re stored as encrypted files using Ansible Vault.</p>
+
           <h1 id="ubiq">UBIQ</h1>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<ol>
+<li>Download the vaultpass by running <code class="prettyprint">aws s3 cp s3://jako-ubiq/credentials/vaultpass .vaultpass --profile jako</code></li>
+</ol>
+
+<h2 id="how-to">How To</h2>
+
+<h3 id="update-environment-variables">Update Environment Variables</h3>
+
+<pre class="highlight shell"><code><span class="c"># staging</span>
+ansible-vault --vault-password-file .vaultpass <span class="se">\</span>
+  ansible/group_vars/staging.yml edit
+
+<span class="c"># production</span>
+ansible-vault --vault-password-file .vaultpass <span class="se">\</span>
+  ansible/group_vars/production.yml edit
+
+<span class="c"># aptos</span>
+ansible-vault --vault-password-file .vaultpass <span class="se">\</span>
+  manage/group_vars/aptos.yml edit
+</code></pre>
+
+<p>Environment variables require a deploy. They&rsquo;re stored as encrypted files using Ansible Vault.</p>
 
       </div>
       <div class="dark-box">
