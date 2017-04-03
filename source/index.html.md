@@ -12,8 +12,8 @@ includes:
   - process-reference
   - infrastructure
   - aptos
-  - kicksusa
-  - ubiq
+  - kicksusa.md.erb
+  - ubiq.md.erb
 
 search: true
 ---

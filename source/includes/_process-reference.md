@@ -1,6 +1,6 @@
 # Process Reference
 
-This is a list of frequently run processes.
+This is a list of frequently run processes. There's [a gist with a bunch of useful scripts](https://gist.github.com/rpnzl/403a88cbe41c32a7dd08ccab7ad958e9) that we've compiled over time, too.
 
 1. [**Deploy**](#deploy-to-staging-or-production) the UBIQ or KicksUSA Magento applications to staging or production.
 
@@ -12,7 +12,8 @@ This is a list of frequently run processes.
 
 5. [**Inventory Load**](#inventory-load) for importing new products and stock into Magento.
 
-There's [a gist with a bunch of useful scripts](https://gist.github.com/rpnzl/403a88cbe41c32a7dd08ccab7ad958e9) that we've compiled over time, too.
+6. [**Edit Environment Variables**](#update-environment-variables) to change runtime configuration.
 
+7. [**Aptos: Deploy**](#deploy-aptos-staging) deploy to the Aptos staging server.
 
-2. [**Deploy Aptos**](#deploy-aptos) check the status of a deployment.
+8. [**Aptos: Whitelist IPs**](#whitelist-ips-for-aptos-staging) to grant access.
