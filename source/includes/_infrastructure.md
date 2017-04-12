@@ -164,3 +164,11 @@ SELECT * FROM ubiq_globals.TBL_LOG ORDER BY log_id DESC LIMIT 100;
 ```
 
 This is the process that ensures inventory updates and new products are moved into the Magento DB from the warehouse management system (RMS) (see [diagram](https://docs.google.com/drawings/d/1RATPCf7aXYLFEkBYrMuZVwgQXGSmOsSlFLZNL4JplqA/edit)). **You'll need SSH access and MySQL access to make this happen.**
+
+### Build an AMI or Vagrant Box
+
+The Packer process will build a new AWS AMI **and** a new Vagrant box for development (which is stored in S3). Please review the [`build.json`](https://github.com/jakoenterprise/infrastructure/blob/18b85c6eee6973945ef35ea04f6e1bbc5c1e7010/manage/packer/build.json) file for more details.
+
+1. Update the `box_version` in `manage/packer/build.json`
+
+2. `bash bin/build.sh`
