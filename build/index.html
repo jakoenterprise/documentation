@@ -177,6 +177,7 @@
 <li><p><a href="#run-ad-hoc-commands"><strong>Run Ad-Hoc Commands</strong></a> like turning on maintenance mode, or restarting NGINX.</p></li>
 <li><p><a href="#image-importer-process"><strong>Image Importer Process</strong></a> for ensuring new images are associated in the database.</p></li>
 <li><p><a href="#inventory-load"><strong>Inventory Load</strong></a> for importing new products and stock into Magento.</p></li>
+<li><p><a href="#build-an-ami-or-vagrant-box"><strong>Build an AMI or Vagrant Box</strong></a> for new AMIs or Vagrant boxes</p></li>
 <li><p><a href="#update-environment-variables"><strong>Edit Environment Variables</strong></a> to change runtime configuration.</p></li>
 <li><p><a href="#deploy-aptos-staging"><strong>Aptos: Deploy</strong></a> deploy to the Aptos staging server.</p></li>
 <li><p><a href="#whitelist-ips-for-aptos-staging"><strong>Aptos: Whitelist IPs</strong></a> to grant access.</p></li>
@@ -327,6 +328,15 @@ SELECT <span class="k">*</span> FROM kicks_globals.TBL_LOG ORDER BY log_id DESC 
 SELECT <span class="k">*</span> FROM ubiq_globals.TBL_LOG ORDER BY log_id DESC LIMIT 100;
 </code></pre>
 <p>This is the process that ensures inventory updates and new products are moved into the Magento DB from the warehouse management system (RMS) (see <a href="https://docs.google.com/drawings/d/1RATPCf7aXYLFEkBYrMuZVwgQXGSmOsSlFLZNL4JplqA/edit">diagram</a>). <strong>You&rsquo;ll need SSH access and MySQL access to make this happen.</strong></p>
+
+<h3 id="build-an-ami-or-vagrant-box">Build an AMI or Vagrant Box</h3>
+
+<p>The Packer process will build a new AWS AMI <strong>and</strong> a new Vagrant box for development (which is stored in S3). Please review the <a href="https://github.com/jakoenterprise/infrastructure/blob/18b85c6eee6973945ef35ea04f6e1bbc5c1e7010/manage/packer/build.json"><code class="prettyprint">build.json</code></a> file for more details.</p>
+
+<ol>
+<li><p>Update the <code class="prettyprint">box_version</code> in <code class="prettyprint">manage/packer/build.json</code></p></li>
+<li><p><code class="prettyprint">bash bin/build.sh</code></p></li>
+</ol>
 
           <h1 id="aptos">Aptos</h1>
 
