@@ -50,6 +50,6 @@ Then find the newest Aptos security group. **Note that security groups can have 
 
 ![Edit the newest Aptos Security Group](https://cl.ly/2w0X0M161L14/[c5206d05a119b8af3b85cd221b892ba2]_Image%202017-04-03%20at%202.08.37%20PM.public.png)
 
-Add a new record, ensure it allows "All TCP" traffic, and add the IP CIDR. **The "/32" is important, remember to add that to the end of the IP you're whitelisting.** Once added the IP will be immediately able to access the Aptos server.
+Add a new record, ensure it allows "All TCP" traffic, and add the IP CIDR. **The "/32" suffix is important for IPv4 records (e.g. 127.0.0.1), remember to add that to the end of the IP you're whitelisting. IPv6 records (e.g. 2001:0db8:85a3:0000:0000:8a2e:0370:7334) require a "/128" instead of "/32".** Once added the IP will be immediately able to access the Aptos server.
 
 ![Add a new record](https://cl.ly/06150p0n2O1b/Image%202017-04-03%20at%202.13.15%20PM.public.png)
