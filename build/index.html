@@ -387,7 +387,7 @@ ansible-playbook -i manage/hosts/aptos <span class="se">\</span>
 
 <p><img src="https://cl.ly/2w0X0M161L14/[c5206d05a119b8af3b85cd221b892ba2]_Image%202017-04-03%20at%202.08.37%20PM.public.png" alt="Edit the newest Aptos Security Group" /></p>
 
-<p>Add a new record, ensure it allows &ldquo;All TCP&rdquo; traffic, and add the IP CIDR. <strong>The &ldquo;/32&rdquo; is important, remember to add that to the end of the IP you&rsquo;re whitelisting.</strong> Once added the IP will be immediately able to access the Aptos server.</p>
+<p>Add a new record, ensure it allows &ldquo;All TCP&rdquo; traffic, and add the IP CIDR. <strong>The &ldquo;/32&rdquo; suffix is important for IPv4 records (e.g. 127.0.0.1), remember to add that to the end of the IP you&rsquo;re whitelisting. IPv6 records (e.g. 2001:0db8:85a3:0000:0000:8a2e:0370:7334) require a &ldquo;/128&rdquo; instead of &ldquo;/32&rdquo;.</strong> Once added the IP will be immediately able to access the Aptos server.</p>
 
 <p><img src="https://cl.ly/06150p0n2O1b/Image%202017-04-03%20at%202.13.15%20PM.public.png" alt="Add a new record" /></p>
 
