@@ -179,8 +179,8 @@
 <li><p><a href="#inventory-load"><strong>Inventory Load</strong></a> for importing new products and stock into Magento.</p></li>
 <li><p><a href="#build-an-ami-or-vagrant-box"><strong>Build an AMI or Vagrant Box</strong></a> for new AMIs or Vagrant boxes</p></li>
 <li><p><a href="#update-environment-variables"><strong>Edit Environment Variables</strong></a> to change runtime configuration.</p></li>
-<li><p><a href="#deploy-aptos-staging"><strong>Aptos: Deploy</strong></a> deploy to the Aptos staging server.</p></li>
-<li><p><a href="#whitelist-ips-for-aptos-staging"><strong>Aptos: Whitelist IPs</strong></a> to grant access.</p></li>
+<li><p><a href="#deploy-aptos"><strong>Aptos: Deploy</strong></a> deploy to an Aptos server.</p></li>
+<li><p><a href="#whitelist-ips-for-aptos"><strong>Aptos: Whitelist IPs</strong></a> to grant access.</p></li>
 </ol>
 
           <h1 id="infrastructure">Infrastructure</h1>
@@ -340,6 +340,18 @@ SELECT <span class="k">*</span> FROM ubiq_globals.TBL_LOG ORDER BY log_id DESC L
 
           <h1 id="aptos">Aptos</h1>
 
+<h2 id="important">Important!</h2>
+
+<p>We recently added two new AWS development servers to the mix, so now we have:</p>
+
+<ul>
+<li>(1) &ldquo;staging&rdquo; instance for both KicksUSA and UBIQ (aptos.kicksusa.com, aptos.ubiqlife.com)</li>
+<li>(1) &ldquo;development&rdquo; instance for KicksUSA (aptosdev.kicksusa.com)</li>
+<li>(1) &ldquo;development&rdquo; instance for UBIQ (aptosdev.ubiqlife.com)</li>
+</ul>
+
+<p>The sections below have been updated, but it&rsquo;s important to keep the new topology in mind when maintaining the Aptos pipeline.</p>
+
 <h2 id="getting-started">Getting Started</h2>
 
 <p>The Aptos staging setup uses an older provisioning and deployment setup. This will move eventually, but for now we&rsquo;re running it in parallel.</p>
@@ -359,8 +371,12 @@ SELECT <span class="k">*</span> FROM ubiq_globals.TBL_LOG ORDER BY log_id DESC L
 
 <h2 id="how-to">How To</h2>
 
-<h3 id="deploy-aptos-staging">Deploy Aptos Staging</h3>
+<h3 id="deploy-aptos">Deploy Aptos</h3>
 <pre class="highlight shell"><code><span class="c"># from within the kicksusa or ubiq magento repositories</span>
+
+ansible-playbook -i manage/hosts/aptos-dev <span class="se">\</span>
+  --vault-password-file .vaultpass manage/deploy.yml
+
 ansible-playbook -i manage/hosts/aptos <span class="se">\</span>
   --vault-password-file .vaultpass manage/deploy.yml
 </code></pre>
@@ -368,14 +384,21 @@ ansible-playbook -i manage/hosts/aptos <span class="se">\</span>
 
 <p><strong>Both KicksUSA and UBIQ Aptos environments exist on the same staging server.</strong></p>
 
-<h3 id="provision-aptos-staging">Provision Aptos Staging</h3>
+<h3 id="provision-aptos">Provision Aptos</h3>
 <pre class="highlight shell"><code><span class="c"># from within the infrastructure repo</span>
+
+ansible-playbook -i manage/hosts/aptos-dev-kicksusa <span class="se">\</span>
+  --vault-password-file .vaultpass manage/deploy.yml
+
+ansible-playbook -i manage/hosts/aptos-dev-ubiq <span class="se">\</span>
+  --vault-password-file .vaultpass manage/deploy.yml
+
 ansible-playbook -i manage/hosts/aptos <span class="se">\</span>
   --vault-password-file .vaultpass manage/provision.yml
 </code></pre>
 <p>This is a legacy process, it&rsquo;s sticking around until we&rsquo;re able to switch over the Aptos staging environment. It&rsquo;s unlikely this command will need to be run.</p>
 
-<h3 id="whitelist-ips-for-aptos-staging">Whitelist IPs for Aptos Staging</h3>
+<h3 id="whitelist-ips-for-aptos">Whitelist IPs for Aptos</h3>
 
 <p>Rather than do this using NGINX on the staging server itself, we&rsquo;ve moved whitelisting to AWS security groups to make it a less technical task. Anyone with the correct permissions can whitelist a new IP by taking the following steps.</p>
 
@@ -390,6 +413,8 @@ ansible-playbook -i manage/hosts/aptos <span class="se">\</span>
 <p>Add a new record, ensure it allows &ldquo;All TCP&rdquo; traffic, and add the IP CIDR. <strong>The &ldquo;/32&rdquo; suffix is important for IPv4 records (e.g. 127.0.0.1), remember to add that to the end of the IP you&rsquo;re whitelisting. IPv6 records (e.g. 2001:0db8:85a3:0000:0000:8a2e:0370:7334) require a &ldquo;/128&rdquo; instead of &ldquo;/32&rdquo;.</strong> Once added the IP will be immediately able to access the Aptos server.</p>
 
 <p><img src="https://cl.ly/06150p0n2O1b/Image%202017-04-03%20at%202.13.15%20PM.public.png" alt="Add a new record" /></p>
+
+<p>Note that these security groups are attached to all of the Aptos instances, so whitelisting one time will grant access to all Aptos servers.</p>
 
           <h1 id="kicksusa">KicksUSA</h1>
 
