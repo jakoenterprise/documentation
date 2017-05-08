@@ -16,6 +16,6 @@ This is a list of frequently run processes. There's [a gist with a bunch of usef
 
 1. [**Edit Environment Variables**](#update-environment-variables) to change runtime configuration.
 
-1. [**Aptos: Deploy**](#deploy-aptos-staging) deploy to the Aptos staging server.
+1. [**Aptos: Deploy**](#deploy-aptos) deploy to an Aptos server.
 
-1. [**Aptos: Whitelist IPs**](#whitelist-ips-for-aptos-staging) to grant access.
+1. [**Aptos: Whitelist IPs**](#whitelist-ips-for-aptos) to grant access.
