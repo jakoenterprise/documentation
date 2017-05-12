@@ -12,4 +12,4 @@ ansible-vault --vault-password-file .vaultpass \
   manage/group_vars/aptos.yml edit
 ```
 
-Environment variables require a deploy. They're stored as encrypted files using Ansible Vault.
+**Environment variables require a deploy.** They're stored as encrypted files using Ansible Vault.

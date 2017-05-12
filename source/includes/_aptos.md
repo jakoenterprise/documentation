@@ -40,7 +40,7 @@ ansible-playbook -i manage/hosts/aptos \
 
 This is a legacy process, it's sticking around until we're able to switch over the Aptos staging environment. Ansible will deploy the `aptos` branch by default for the `aptos` host file.
 
-**Both KicksUSA and UBIQ Aptos environments exist on the same staging server.**
+**Both KicksUSA and UBIQ Aptos environments exist on the same staging server, but each app has its own, separate _aptosdev_ development server.**
 
 ### Provision Aptos
 
@@ -48,10 +48,10 @@ This is a legacy process, it's sticking around until we're able to switch over t
 # from within the infrastructure repo
 
 ansible-playbook -i manage/hosts/aptos-dev-kicksusa \
-  --vault-password-file .vaultpass manage/deploy.yml
+  --vault-password-file .vaultpass manage/provision.yml
 
 ansible-playbook -i manage/hosts/aptos-dev-ubiq \
-  --vault-password-file .vaultpass manage/deploy.yml
+  --vault-password-file .vaultpass manage/provision.yml
 
 ansible-playbook -i manage/hosts/aptos \
   --vault-password-file .vaultpass manage/provision.yml
@@ -61,18 +61,4 @@ This is a legacy process, it's sticking around until we're able to switch over t
 
 ### Whitelist IPs for Aptos
 
-Rather than do this using NGINX on the staging server itself, we've moved whitelisting to AWS security groups to make it a less technical task. Anyone with the correct permissions can whitelist a new IP by taking the following steps.
-
-First, navigate to the EC2 dashboard.
-
-![Navigate to the EC2 dashboard](https://cl.ly/2f1q392d072u/[070b4088b65deff8a304909f6771ef42]_Image%202017-04-03%20at%202.02.56%20PM.public.png)
-
-Then find the newest Aptos security group. **Note that security groups can have a maximum of 25 rules each, so if "Aptos 2" fills up, start using "Aptos 3" instead.**
-
-![Edit the newest Aptos Security Group](https://cl.ly/2w0X0M161L14/[c5206d05a119b8af3b85cd221b892ba2]_Image%202017-04-03%20at%202.08.37%20PM.public.png)
-
-Add a new record, ensure it allows "All TCP" traffic, and add the IP CIDR. **The "/32" suffix is important for IPv4 records (e.g. 127.0.0.1), remember to add that to the end of the IP you're whitelisting. IPv6 records (e.g. 2001:0db8:85a3:0000:0000:8a2e:0370:7334) require a "/128" instead of "/32".** Once added the IP will be immediately able to access the Aptos server.
-
-![Add a new record](https://cl.ly/06150p0n2O1b/Image%202017-04-03%20at%202.13.15%20PM.public.png)
-
-Note that these security groups are attached to all of the Aptos instances, so whitelisting one time will grant access to all Aptos servers.
+Whitelisting IPs for Aptos is no longer necessary, we've opened up the instances to allow HTTP access from anywhere. We've also updated the `robots.txt` files to prevent search engine indexing.
