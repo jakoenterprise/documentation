@@ -382,16 +382,16 @@ ansible-playbook -i manage/hosts/aptos <span class="se">\</span>
 </code></pre>
 <p>This is a legacy process, it&rsquo;s sticking around until we&rsquo;re able to switch over the Aptos staging environment. Ansible will deploy the <code class="prettyprint">aptos</code> branch by default for the <code class="prettyprint">aptos</code> host file.</p>
 
-<p><strong>Both KicksUSA and UBIQ Aptos environments exist on the same staging server.</strong></p>
+<p><strong>Both KicksUSA and UBIQ Aptos environments exist on the same staging server, but each app has its own, separate <em>aptosdev</em> development server.</strong></p>
 
 <h3 id="provision-aptos">Provision Aptos</h3>
 <pre class="highlight shell"><code><span class="c"># from within the infrastructure repo</span>
 
 ansible-playbook -i manage/hosts/aptos-dev-kicksusa <span class="se">\</span>
-  --vault-password-file .vaultpass manage/deploy.yml
+  --vault-password-file .vaultpass manage/provision.yml
 
 ansible-playbook -i manage/hosts/aptos-dev-ubiq <span class="se">\</span>
-  --vault-password-file .vaultpass manage/deploy.yml
+  --vault-password-file .vaultpass manage/provision.yml
 
 ansible-playbook -i manage/hosts/aptos <span class="se">\</span>
   --vault-password-file .vaultpass manage/provision.yml
@@ -400,21 +400,7 @@ ansible-playbook -i manage/hosts/aptos <span class="se">\</span>
 
 <h3 id="whitelist-ips-for-aptos">Whitelist IPs for Aptos</h3>
 
-<p>Rather than do this using NGINX on the staging server itself, we&rsquo;ve moved whitelisting to AWS security groups to make it a less technical task. Anyone with the correct permissions can whitelist a new IP by taking the following steps.</p>
-
-<p>First, navigate to the EC2 dashboard.</p>
-
-<p><img src="https://cl.ly/2f1q392d072u/[070b4088b65deff8a304909f6771ef42]_Image%202017-04-03%20at%202.02.56%20PM.public.png" alt="Navigate to the EC2 dashboard" /></p>
-
-<p>Then find the newest Aptos security group. <strong>Note that security groups can have a maximum of 25 rules each, so if &ldquo;Aptos 2&rdquo; fills up, start using &ldquo;Aptos 3&rdquo; instead.</strong></p>
-
-<p><img src="https://cl.ly/2w0X0M161L14/[c5206d05a119b8af3b85cd221b892ba2]_Image%202017-04-03%20at%202.08.37%20PM.public.png" alt="Edit the newest Aptos Security Group" /></p>
-
-<p>Add a new record, ensure it allows &ldquo;All TCP&rdquo; traffic, and add the IP CIDR. <strong>The &ldquo;/32&rdquo; suffix is important for IPv4 records (e.g. 127.0.0.1), remember to add that to the end of the IP you&rsquo;re whitelisting. IPv6 records (e.g. 2001:0db8:85a3:0000:0000:8a2e:0370:7334) require a &ldquo;/128&rdquo; instead of &ldquo;/32&rdquo;.</strong> Once added the IP will be immediately able to access the Aptos server.</p>
-
-<p><img src="https://cl.ly/06150p0n2O1b/Image%202017-04-03%20at%202.13.15%20PM.public.png" alt="Add a new record" /></p>
-
-<p>Note that these security groups are attached to all of the Aptos instances, so whitelisting one time will grant access to all Aptos servers.</p>
+<p>Whitelisting IPs for Aptos is no longer necessary, we&rsquo;ve opened up the instances to allow HTTP access from anywhere. We&rsquo;ve also updated the <code class="prettyprint">robots.txt</code> files to prevent search engine indexing.</p>
 
           <h1 id="kicksusa">KicksUSA</h1>
 
@@ -441,7 +427,7 @@ ansible-vault --vault-password-file .vaultpass <span class="se">\</span>
   manage/group_vars/aptos.yml edit
 </code></pre>
 
-<p>Environment variables require a deploy. They&rsquo;re stored as encrypted files using Ansible Vault.</p>
+<p><strong>Environment variables require a deploy.</strong> They&rsquo;re stored as encrypted files using Ansible Vault.</p>
 
           <h1 id="ubiq">UBIQ</h1>
 
@@ -468,7 +454,7 @@ ansible-vault --vault-password-file .vaultpass <span class="se">\</span>
   manage/group_vars/aptos.yml edit
 </code></pre>
 
-<p>Environment variables require a deploy. They&rsquo;re stored as encrypted files using Ansible Vault.</p>
+<p><strong>Environment variables require a deploy.</strong> They&rsquo;re stored as encrypted files using Ansible Vault.</p>
 
       </div>
       <div class="dark-box">
